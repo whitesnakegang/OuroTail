@@ -46,14 +46,20 @@ dependencies {
 
     // 10. SDK가 로그를 남길 때 사용할 인터페이스 (구현체는 사용자가 선택)
     compileOnly 'org.slf4j:slf4j-api'
+    
+    // 11. Docker Java API for K6 integration
+    implementation 'com.github.docker-java:docker-java:3.3.6'
+    implementation 'com.github.docker-java:docker-java-transport-httpclient5:3.3.6'
 
-
-    // 11. 테스트 의존성은 그대로 유지 (SDK도 테스트가 필요함)
+    // 12. 테스트 의존성은 그대로 유지 (SDK도 테스트가 필요함)
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     
-    // 12. (선택 사항) SDK의 컨트롤러 API에 @Operation 등을 붙이려면 추가
-    // implementation 'io.swagger.core.v3:swagger-annotations-jakarta:2.2.20'
+    // 13. SpringDoc OpenAPI for API documentation
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-api:2.2.0'
+
+    compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
 }
 
 // 13. 의존성 버전 관리를 위한 BOM(Bill of Materials) 설정
@@ -65,6 +71,35 @@ dependencyManagement {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+// API 문서 생성 태스크
+task generateApiDocs(type: Exec) {
+    group = 'documentation'
+    description = 'OpenAPI 정적 문서를 생성합니다'
+    
+    commandLine 'node', 'generate-api-docs.js'
+    
+    // Spring Boot 애플리케이션이 실행 중이어야 함
+    dependsOn 'bootRun'
+    
+    doFirst {
+        println 'OpenAPI 정적 문서를 생성합니다...'
+        println 'Spring Boot 애플리케이션이 실행 중인지 확인하세요.'
+    }
+}
+
+// 문서 서빙 태스크
+task serveDocs(type: Exec) {
+    group = 'documentation'
+    description = '생성된 API 문서를 로컬 서버에서 제공합니다'
+    
+    workingDir 'docs'
+    commandLine 'python', '-m', 'http.server', '8000'
+    
+    doFirst {
+        println 'API 문서를 http://localhost:8000에서 제공합니다...'
+    }
 }
 
 // SDK 배포를 위한 설정
