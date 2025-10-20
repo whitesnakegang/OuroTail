@@ -1,0 +1,136 @@
+plugins {
+    // 1. 'java-library'로 변경 (실행 가능한 fat-jar가 아닌 라이브러리 jar를 만듦)
+    id 'java-library'
+    
+    // 2. 'org.springframework.boot' 플러그인 삭제
+    // (이 플러그인은 실행 가능한 애플리케이션을 만들 때 필요)
+    
+    // 3. 의존성 버전 관리를 위해 'dependency-management' 플러그인은 유지
+    id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.c102' // SDK의 그룹 ID
+version = '0.0.1-SNAPSHOT'
+// 4. 설명 변경 (SDK 용도에 맞게)
+description = 'K6 SDK for Spring Boot'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+// 5. Spring Boot 버전을 변수로 지정 (BOM 관리를 위해)
+ext {
+    springBootVersion = '3.3.6' // (3.5.6은 아직 존재하지 않아 3.3.6으로 수정)
+}
+
+dependencies {
+    // 6. 'spring-boot-starter' 삭제
+    // (이 의존성은 Tomcat 같은 웹 서버를 포함하므로 라이브러리와 충돌)
+
+    // 7. 자동 설정을 위한 핵심 의존성 추가
+    implementation 'org.springframework.boot:spring-boot-autoconfigure'
+
+    // 8. @RestController, @PostMapping 등을 사용하기 위한 의존성 (Tomcat 없음)
+    implementation 'org.springframework:spring-web'
+
+    // 9. @ConfigurationProperties (application.properties 값) 사용을 위함
+    // SDK 사용자에게 IDE 자동완성을 제공
+    implementation 'org.springframework.boot:spring-boot-configuration-processor'
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+
+    // 10. SDK가 로그를 남길 때 사용할 인터페이스 (구현체는 사용자가 선택)
+    compileOnly 'org.slf4j:slf4j-api'
+
+
+    // 11. 테스트 의존성은 그대로 유지 (SDK도 테스트가 필요함)
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    
+    // 12. (선택 사항) SDK의 컨트롤러 API에 @Operation 등을 붙이려면 추가
+    // implementation 'io.swagger.core.v3:swagger-annotations-jakarta:2.2.20'
+}
+
+// 13. 의존성 버전 관리를 위한 BOM(Bill of Materials) 설정
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.boot:spring-boot-dependencies:${springBootVersion}"
+    }
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+// SDK 배포를 위한 설정
+apply plugin: 'maven-publish'
+
+// JAR 파일에 소스 코드 포함
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
+
+// Maven 배포 설정
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+            
+            groupId = 'com.c102'
+            artifactId = 'ourotail-sdk'
+            version = '0.0.1-SNAPSHOT'
+            
+            // 의존성 버전 문제 해결을 위한 설정
+            versionMapping {
+                usage('java-api') {
+                    fromResolutionOf('runtimeClasspath')
+                }
+                usage('java-runtime') {
+                    fromResolutionResult()
+                }
+            }
+            
+            pom {
+                name = 'Ourotail SDK'
+                description = 'K6 SDK for Spring Boot'
+                url = 'https://github.com/your-org/ourotail-sdk'
+                
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                
+                developers {
+                    developer {
+                        id = 'developer'
+                        name = 'Developer Name'
+                        email = 'developer@example.com'
+                    }
+                }
+            }
+        }
+    }
+    
+    // 로컬 Maven 저장소에 배포 (테스트용)
+    repositories {
+        mavenLocal()
+        
+        // 실제 배포 시에는 Maven Central이나 사설 저장소 사용
+        // maven {
+        //     name = "GitHubPackages"
+        //     url = uri("https://maven.pkg.github.com/your-org/ourotail-sdk")
+        //     credentials {
+        //         username = project.findProperty("gpr.user") ?: System.getenv("USERNAME")
+        //         password = project.findProperty("gpr.key") ?: System.getenv("TOKEN")
+        //     }
+        // }
+    }
+}
