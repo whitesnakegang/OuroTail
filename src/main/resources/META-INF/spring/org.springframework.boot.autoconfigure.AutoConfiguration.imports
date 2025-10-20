@@ -1,1 +1,2 @@
 com.c102.ourotail.config.OurotailAutoConfiguration
+com.c102.ourotail.k6.config.K6RunnerAutoConfiguration
