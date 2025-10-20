@@ -73,6 +73,12 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
+// Javadoc 경고로 인해 빌드가 실패하지 않도록 설정 (doclint 비활성화)
+tasks.withType(Javadoc) {
+    options.addStringOption('Xdoclint:none', '-quiet')
+    failOnError = false
+}
+
 // API 문서 생성 태스크
 task generateApiDocs(type: Exec) {
     group = 'documentation'
