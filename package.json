@@ -1,0 +1,38 @@
+{
+  "name": "ourotail-sdk-docs",
+  "version": "0.0.1-SNAPSHOT",
+  "description": "Ourotail SDK API Documentation Generator",
+  "main": "generate-api-docs.js",
+  "scripts": {
+    "generate-docs": "node generate-api-docs.js",
+    "serve-docs": "cd docs && python -m http.server 8000",
+    "serve-docs-node": "npx http-server docs -p 8000 -o",
+    "build": "npm run generate-docs",
+    "dev": "npm run generate-docs && npm run serve-docs"
+  },
+  "keywords": [
+    "api",
+    "documentation",
+    "swagger",
+    "openapi",
+    "spring-boot",
+    "k6",
+    "performance-testing"
+  ],
+  "author": "Ourotail Team",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ourotail/ourotail-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ourotail/ourotail-sdk/issues"
+  },
+  "homepage": "https://github.com/ourotail/ourotail-sdk#readme"
+}
